@@ -1,3 +1,11 @@
+def text_remove_nl(text):
+    for line in text:
+        limit = len(line) - 1
+        n_line = line[:limit]
+        line = n_line
+
+    return text
+    
 def label_dict(name_importance):
     if name_importance == True:
         label_dict = {'name' : None, 'content': None}
