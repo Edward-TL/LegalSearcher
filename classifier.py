@@ -54,3 +54,103 @@ def join_labels(text, label, name_importance=True):
                         labeled_text[last_label]['content'].append(line)
 
     return labeled_text
+
+
+
+def first_word(sentence):
+    char = sentence[0]
+    n = 0
+    while char != ' ' and n < len(sentence):
+        n += 1
+        try:
+            char = sentence[n]
+        except:
+        #     print('line', sentence)
+        #     print('length', len(sentence))
+        #     print('last n', n)
+        #     print('last char', char)
+            pass
+    return sentence[:n]
+
+def articles_name(line, sep='.'):
+    char = line[0]
+    n = 0
+    while char != sep:
+        n += 1
+        char = line[n]
+    return line[:n]
+
+def build_article_dict(h1_dict, h2_dict, line):
+    article_name = articles_name(line)
+    article_dict = {
+        # head = TITUTLO II, name = de las garantias y los deberes
+        'h1': h1_dict, 
+        # head = CAPITULO 1, name = de los derechos fundamentales
+        'h2': h2_dict,
+        # name = Articulo 11, content = El derecho a la vida es inviolable.
+        #                               No habra pena de muerte
+        'article': {'name': article_name, 'content': [line]},
+        }
+    return article_dict
+
+jerarquy = {
+    'TITULO' : 'h1',
+    'DISPOSICIONES' : 'h1',
+    'CAPITULO' : 'h2',
+    'ARTÍCULO' : 'p'
+
+}
+def articles_info(constitution, jerarquy_dict=jerarquy, debugging=True):
+    article_list = []
+    h1, h2 = "", ""
+    name_next_h1, name_next_h2 = False, False
+    
+    for line in constitution:
+        hint = first_word(line).upper()
+        if debugging: print(hint, 'checking: ', line)
+
+        if hint in jerarquy_dict: # is a header
+            # Which head?
+            h = jerarquy_dict[hint]
+            if debugging: print('is an ', h)
+
+            if h == 'h1':
+                if debugging: print('Yeap! h1')
+                h1 = line
+                name_next_h1 = True
+                # All articles belong to a h1, but some doesn't
+                # have an h2. That's why is an trigger.
+                # Some titles can start with articles and not chapters
+                h2_dict = {'head': None, 'name': None}
+
+            elif h == 'h2':
+                if debugging: print('Yeap! h2')
+                h2 = line
+                name_next_h2 = True
+            
+            else: # article
+                if debugging: print('Yeap! article')
+
+                article_data = build_article_dict(h1_dict, h2_dict, line)
+                if debugging: print(article_data)
+                article_list.append(article_data)
+        else: #is an article
+            if name_next_h1 == True:
+                h1_dict = {'head': h1, 'name': line}
+                name_next_h1 = False
+                if debugging: print('h1_dict', h1_dict)
+                
+            elif name_next_h2 == True:
+                h2_dict = {'head': h2, 'name': line}
+                name_next_h2 = False
+                if debugging: print('h2_dict', h2_dict)
+            
+            else:
+                article_dict = article_list[-1]
+                art_cont = article_dict['article']['content']
+                art_cont.append(line)
+                article_dict['article']['content'] = art_cont
+                if debugging: print(line, 'is not on dict')
+                
+
+    return article_list
