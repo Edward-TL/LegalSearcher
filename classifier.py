@@ -5,57 +5,6 @@ def text_remove_nl(text):
         line = n_line
 
     return text
-    
-def label_dict(name_importance):
-    if name_importance == True:
-        label_dict = {'name' : None, 'content': None}
-    else:
-        label_dict = {'content': None}
-
-    return label_dict
-
-def join_labels(text, label, name_importance=True):
-    labeled_text = {}
-    
-    # Intialized the variable
-    name_next = False
-    
-    for n in range(len(text)):
-        line = text[n]
-        # In all cases, the 0 is an start (also in chapters)
-        if n == 0:
-            # In case of articles, it does not add the name part
-            labeled_text[line] = label_dict(name_importance)
-            # Where it remembers the last label used
-            last_label = line
-            #In other case, this remains as False
-            if name_importance == True: name_next = True
-                
-        else:  # For the next cases
-            # Recognize for a new label
-            if line[:len(label)].upper() == label.upper():
-                # Creates the label on the dictionary
-                labeled_text[line] = label_dict(name_importance)
-                
-                # Remembers the new label
-                last_label = line
-                if name_importance == True: name_next = True
-                    
-            else:
-                if name_importance == True and name_next == True:
-                    # In case that the name matters, like tittles and chapters
-                    labeled_text[last_label]['name'] = line
-                    
-                    name_next = False
-                else:
-                    if labeled_text[last_label]['content'] == None:
-                        labeled_text[last_label]['content'] = [line]
-                    else:
-                        labeled_text[last_label]['content'].append(line)
-
-    return labeled_text
-
-
 
 def first_word(sentence):
     char = sentence[0]
@@ -83,24 +32,22 @@ def articles_name(line, sep='.'):
 def build_article_dict(h1_dict, h2_dict, line):
     article_name = articles_name(line)
     article_dict = {
-        # head = TITUTLO II, name = de las garantias y los deberes
-        'h1': h1_dict, 
-        # head = CAPITULO 1, name = de los derechos fundamentales
-        'h2': h2_dict,
+        'h1': h1_dict, # head = TITUTLO II, name = de las garantias y los deberes 
+        'h2': h2_dict, # head = CAPITULO 1, name = de los derechos fundamentales
+        'article': {'name': article_name, 'content': [line]},
         # name = Articulo 11, content = El derecho a la vida es inviolable.
         #                               No habra pena de muerte
-        'article': {'name': article_name, 'content': [line]},
         }
     return article_dict
 
-jerarquy = {
+hierarchy = {
     'TITULO' : 'h1',
     'DISPOSICIONES' : 'h1',
     'CAPITULO' : 'h2',
     'ARTÍCULO' : 'p'
 
 }
-def articles_info(constitution, jerarquy_dict=jerarquy, debugging=True):
+def articles_info(constitution, hierarchy_dict=hierarchy, debugging=True):
     article_list = []
     h1, h2 = "", ""
     name_next_h1, name_next_h2 = False, False
@@ -109,9 +56,9 @@ def articles_info(constitution, jerarquy_dict=jerarquy, debugging=True):
         hint = first_word(line).upper()
         if debugging: print(hint, 'checking: ', line)
 
-        if hint in jerarquy_dict: # is a header
+        if hint in hierarchy_dict: # is a header
             # Which head?
-            h = jerarquy_dict[hint]
+            h = hierarchy_dict[hint]
             if debugging: print('is an ', h)
 
             if h == 'h1':
@@ -154,3 +101,26 @@ def articles_info(constitution, jerarquy_dict=jerarquy, debugging=True):
                 
 
     return article_list
+
+def titles_content(articles_list):
+    titles_content = {}
+    for article in articles_list:
+        title = article['h1']['head']
+        if title not in titles_content:
+            titles_content[title] = {
+                'name': article['h1']['name'],
+                'chapters': {},
+            }
+
+        title_chapters = titles_content[title]['chapters']
+        chapter = article['h2']['head']
+
+        if chapter not in title_chapters:
+            title_chapters = {
+                'names' : article['h2']['name'],
+                'articles' : {},
+            }
+            titles_content[title]['chapters'][chapter] = title_chapters
+
+        
+    return titles_content
