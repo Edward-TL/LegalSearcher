@@ -61,6 +61,13 @@ def articles_info(constitution, hierarchy_dict=hierarchy, debugging=True):
             h = hierarchy_dict[hint]
             if debugging: print('is an ', h)
 
+            if name_next_h1 == True:
+                h1_dict = {'head': h1, 'name': None}
+                name_next_h1 = False
+            if name_next_h2 == True:
+                h2_dict = {'head': h2, 'name': None}
+                name_next_h2 = False
+
             if h == 'h1':
                 if debugging: print('Yeap! h1')
                 h1 = line
