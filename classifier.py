@@ -61,6 +61,8 @@ def articles_info(constitution, hierarchy_dict=hierarchy, debugging=True):
             h = hierarchy_dict[hint]
             if debugging: print('is an ', h)
 
+            # In case the chapter or title (like "Disposiciones") did not have 
+            # a name.
             if name_next_h1 == True:
                 h1_dict = {'head': h1, 'name': None}
                 name_next_h1 = False
