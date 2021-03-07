@@ -1,0 +1,6 @@
+treelib
+wordcloud
+pillow
+spacy
+nltk
+sklearn
