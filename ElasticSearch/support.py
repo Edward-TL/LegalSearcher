@@ -95,8 +95,8 @@ def add_to_log(log_info, request_response, post_payload):
             log_info['message'] = [ response_dict['message'] ]
         else:
             log_info['status'] = [ status ]
-            log_info['message'] = [' ']
-            log_info['error'] = [success_message]
+            log_info['message'] = [success_message]
+            log_info['error'] = [' ']
     
     # The rest
     else:
@@ -123,3 +123,20 @@ def print_article(art_number, article):
           article['article']['name'],article['article']['content'])
 
     print('\n--------------------------------------\n')
+
+def split_text_in_lines(text, delimiter):
+    new_text = []
+    if delimiter == None:
+        print('Missing delimiter value')
+        return 
+
+    for paragraph in text:
+        if delimiter in paragraph:
+            parts = [sentence + delimiter for sentence in paragraph.split(delimiter) if sentence]
+            for part in parts:
+                new_text.append(part)
+        else:
+            new_text.append(paragraph)
+    text = new_text
+
+    return new_text
