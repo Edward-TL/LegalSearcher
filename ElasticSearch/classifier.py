@@ -23,6 +23,7 @@ def first_word(sentence):
             pass
     return sentence[:n]
 
+
 def articles_name(line, sep='.'):
     char = line[0]
     n = 0
@@ -120,21 +121,26 @@ def format_articles(articles_list, debugging=False):
         article_dict = clean_dictionary(article['article'],remove_keys=art_removals,debugging=debugging)
         # article_json = json.dumps(article_dict, ensure_ascii=False)
         new_article['article'] = article_dict
+
+        new_article['embedding'] = article['embedding']
         
         
         new_art_list.append(new_article)
     return new_art_list
 
-def articles_info(book_id, constitution, hierarchy_dict=hierarchy, debugging=True):
+def articles_info(book_id, constitution, hierarchy_dict=hierarchy, debugging=True, remove_lineBreak = False):
     article_list = []
     headline, chapter = "", ""
     name_next_headline, name_next_chapter = False, False
     hlId, chId, artId = 0,0,0
-    
+    index = 0
     for line in constitution:
-        if debugging: print("\n---------------\n")
+        if debugging: print(f"\nIndex: {index} ---------------\n")
         hint = first_word(line).upper()
-        line = line.rstrip("\n")
+        
+        if remove_lineBreak:
+            line = line.rstrip("\n")
+        
         if debugging: print(line, 'checking: ', hint)
 
         if hint in hierarchy_dict: # is a header
@@ -201,7 +207,7 @@ def articles_info(book_id, constitution, hierarchy_dict=hierarchy, debugging=Tru
                 art_cont.append(line)
                 article_dict['article']['content'] = art_cont
                 if debugging: print(line, 'is not on dict')
-    
+        index += 1
     # Enrichment area.
     for art in range(len(article_list)):
         lex_div = lexical_diversity(article_list[art]['article']['content'])
