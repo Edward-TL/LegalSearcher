@@ -1,32 +1,9 @@
-
-
-import re
 import json
 
-ascii_list = ((33,47),(58,64),(91,96),(123,126))
-chars = []
-for tupple in ascii_list:
-    for n in range(tupple[0], tupple[1]):
-        chars.append(chr(n))
-
-def clean_words(text, remove_digits=False, debugging=False):
-    '''Remove all puntuaction marks using the ascii table.
-    The digits from 0 to 9 remains unless that it'is required.
-    http://www.asciitable.com/'''
-
-    if debugging: print(text)
-    
-    join_text = " "
-    join_text.join(text)
-    if debugging: print(join_text)
-    
-    words = re.split(r'\W+', join_text)
-    if remove_digits:
-        words = re.split(r'\b\d+\b', join_text)
-    # for char in chars:
-    #     text = text.replace(char, '')
-    return words
-
+def lexical_diversity(article_content):
+    flat_text = " "
+    flat_text = flat_text.join(article_content)
+    return len(flat_text) / len(set(flat_text))
 
 hierarchy = {
     'TITULO' : 'headline',
@@ -34,29 +11,6 @@ hierarchy = {
     'CAPITULO' : 'chapter',
     'ARTÍCULO' : 'article'
 }
-
-def text_remove_nl(text):
-    for line in text:
-        limit = len(line) - 1
-        n_line = line[:limit]
-        line = n_line
-
-    return text
-
-def first_word(sentence):
-    char = sentence[0]
-    n = 0
-    while char != ' ' and n < len(sentence):
-        n += 1
-        try:
-            char = sentence[n]
-        except:
-        #     print('line', sentence)
-        #     print('length', len(sentence))
-        #     print('last n', n)
-        #     print('last char', char)
-            pass
-    return sentence[:n]
 
     # legal_document = {
 #     # Por ejemplo
@@ -115,9 +69,9 @@ def add_to_log(log_info, request_response, post_payload):
 
 def print_article(art_number, article):
 
+          # "lexical_diversity: ", article['article']['lexical_diversity'],"\n",
     print(f'Article No {art_number+1}: \n',
           "id: ", article['article']['article_id'],"\n",
-          "lexical_diversity: ", article['article']['lexical_diversity'],"\n",
           article['headline']['title'],article['headline']['name'],"\n",
           article['chapter']['title'],article['chapter']['name'],"\n",
           article['article']['name'],article['article']['content'])

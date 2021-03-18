@@ -1,36 +1,8 @@
 import json
-
-def text_remove_nl(text):
-    for line in text:
-        limit = len(line) - 1
-        n_line = line[:limit]
-        line = n_line
-
-    return text
-
-def first_word(sentence):
-    char = sentence[0]
-    n = 0
-    while char != ' ' and n < len(sentence):
-        n += 1
-        try:
-            char = sentence[n]
-        except:
-        #     print('line', sentence)
-        #     print('length', len(sentence))
-        #     print('last n', n)
-        #     print('last char', char)
-            pass
-    return sentence[:n]
+from text_filters import *
+from support import *
 
 
-def articles_name(line, sep='.'):
-    char = line[0]
-    n = 0
-    while char != sep:
-        n += 1
-        char = line[n]
-    return line[:n]
 
 def zeros_maker(int_id, str_len = 3):
     zero_string = '0'*(str_len - len(str(int_id))) + str(int_id)
@@ -63,19 +35,6 @@ def build_article_dict(book_id, headline_dict, chapter_dict, line, artId):
         #                               No habra pena de muerte
         }
     return article_dict
-
-def lexical_diversity(article_content):
-    flat_text = " "
-    flat_text = flat_text.join(article_content)
-    return len(flat_text) / len(set(flat_text))
-
-hierarchy = {
-    'TITULO' : 'headline',
-    'DISPOSICIONES' : 'headline',
-    'CAPITULO' : 'chapter',
-    'ARTÍCULO' : 'article'
-
-}
 
 def clean_dictionary(or_dictionary, remove_keys={None}, remove_none=False, debugging=False):
     if debugging: print('before cleaning:', or_dictionary)
@@ -128,13 +87,20 @@ def format_articles(articles_list, debugging=False):
         new_art_list.append(new_article)
     return new_art_list
 
-def articles_info(book_id, constitution, hierarchy_dict=hierarchy, debugging=True, remove_lineBreak = False):
+hierarchy = {
+    'TITULO' : 'headline',
+    'DISPOSICIONES' : 'headline',
+    'CAPITULO' : 'chapter',
+    'ARTICULO' : 'article'
+}
+
+def articles_info(book_id, legal_code, hierarchy_dict=hierarchy, debugging=True, remove_lineBreak = False):
     article_list = []
     headline, chapter = "", ""
     name_next_headline, name_next_chapter = False, False
     hlId, chId, artId = 0,0,0
     index = 0
-    for line in constitution:
+    for line in legal_code:
         if debugging: print(f"\nIndex: {index} ---------------\n")
         hint = first_word(line).upper()
         
@@ -190,6 +156,7 @@ def articles_info(book_id, constitution, hierarchy_dict=hierarchy, debugging=Tru
                 article_data = build_article_dict(book_id, headline_dict, chapter_dict, line, artId)
                 if debugging: print(article_data)
                 article_list.append(article_data)
+
         else: #is an article
             if name_next_headline == True:
                 headline_dict['name'] = line
@@ -202,37 +169,22 @@ def articles_info(book_id, constitution, hierarchy_dict=hierarchy, debugging=Tru
                 if debugging: print('chapter_dict', chapter_dict)
             
             else:
+                if debugging: print(line, 'is not on dict')
+                if debugging: print('index: ', index)
                 article_dict = article_list[-1]
                 art_cont = article_dict['article']['content']
                 art_cont.append(line)
                 article_dict['article']['content'] = art_cont
-                if debugging: print(line, 'is not on dict')
+                
         index += 1
+
     # Enrichment area.
-    for art in range(len(article_list)):
-        lex_div = lexical_diversity(article_list[art]['article']['content'])
-        article_list[art]['article']['lexical_diversity'] = lex_div
+    # for art in range(len(article_list)):
+    #     lex_div = lexical_diversity(article_list[art]['article']['content'])
+    #     article_list[art]['article']['lexical_diversity'] = lex_div
 
     return article_list
 
-
-ascii_list = ((33,47),(58,64),(91,96),(123,126))
-chars = []
-for tupple in ascii_list:
-    for n in range(tupple[0], tupple[1]):
-        chars.append(chr(n))
-import re
-def clean_words(text, debugging=False):
-    
-    if debugging: print(text)
-    
-    join_text = " "
-    join_text.join(text)
-    if debugging: print(join_text)
-    words = re.split(r'\W+', join_text)
-    # for char in chars:
-    #     text = text.replace(char, '')
-    return words
 
 def titles_content(articles_list):
     titles_content = {}
