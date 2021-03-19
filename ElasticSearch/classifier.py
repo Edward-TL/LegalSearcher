@@ -1,13 +1,8 @@
 import json
 from text_filters import *
 from support import *
+from objects import *
 
-
-
-def zeros_maker(int_id, str_len = 3):
-    zero_string = '0'*(str_len - len(str(int_id))) + str(int_id)
-
-    return zero_string
 
 def make_article_id(book_id, headline_dict, chapter_dict,artId):
     hl_id = headline_dict['headline_id']
@@ -21,19 +16,22 @@ def make_article_id(book_id, headline_dict, chapter_dict,artId):
 
     return article_id
 
+'''build_article_dict(book_id, headers, line, headers['article']['count'])'''
+def build_article_dict(code_id, headers_dict, line):
+    # articles_name is @ text_filters
+    article_name = get_art_name(line)
 
-def build_article_dict(book_id, headline_dict, chapter_dict, line, artId):
-    article_name = articles_name(line)
-    article_id = make_article_id(book_id, headline_dict, chapter_dict,artId)
+    article_id = index_hierarchy_id(code_id, headers_dict)
+    # print(article_id)
     article_dict = {
-        'index': "constitucion_politica_de_colombia",
+        'index': code_id,
         'id': str.lower(article_id),
-        'headline': headline_dict, # head = TITUTLO II, name = de las garantias y los deberes 
-        'chapter': chapter_dict, # head = CAPITULO 1, name = de los derechos fundamentales
-        'article': {'name': article_name, 'content': [line], 'article_id': article_id},
-        # name = Articulo 11, content = El derecho a la vida es inviolable.
-        #                               No habra pena de muerte
         }
+    for key, key_dictionary in headers_dict.items():
+        article_dict[key] = key_dictionary
+    # name = Articulo 11, content = El derecho a la vida es inviolable.
+    #                               No habra pena de muerte
+    article_dict['article'] = {'name': article_name, 'content': [line]}
     return article_dict
 
 def clean_dictionary(or_dictionary, remove_keys={None}, remove_none=False, debugging=False):
@@ -44,11 +42,14 @@ def clean_dictionary(or_dictionary, remove_keys={None}, remove_none=False, debug
     
     if remove_none == True:
         remove_keys.add(None)
+
     clean_dictionary = {}
     for key, value in or_dictionary.items():
         if debugging: print('cheking value:',value)
+
         if (key or value) not in remove_keys:
             clean_dictionary[key] = value
+
             if debugging: print('The new dictionary remains like:', clean_dictionary)
         
         else:
@@ -58,47 +59,39 @@ def clean_dictionary(or_dictionary, remove_keys={None}, remove_none=False, debug
     if debugging: print('after cleaning:', clean_dictionary)
     return clean_dictionary
 
-def format_articles(articles_list, debugging=False):
+def format_articles(articles_list, headers_dict, debugging=False):
     new_art_list = []
     for article in articles_list:
         # First, the things that will remain
-        art_id = article['id']
         new_article = {
             'index': article['index'],
-            'id': art_id,
+            'id': article['id'],
         }
 
-        headline_dict = clean_dictionary(article['headline'],remove_keys={'headline_id'},debugging=debugging)
-        # headline_json = json.dumps(headline_dict, ensure_ascii=False)
-        new_article['headline'] = headline_dict
-
-        chapter_dict = clean_dictionary(article['chapter'],remove_keys={'chapter_id'}, debugging=debugging)
-        # chapter_json = json.dumps(chapter_dict, ensure_ascii=False)
-        if chapter_dict: new_article['chapter'] = chapter_dict
+        for key in headers_dict:
+            if key != 'article':
+                key_dict = clean_dictionary(article[key],remove_keys={'count'},debugging=debugging)
+                new_article[key] = key_dict
         
-        art_removals = {'article_id', 'lexical_diversity'}
+        art_removals = {'article_id'}
         article_dict = clean_dictionary(article['article'],remove_keys=art_removals,debugging=debugging)
         # article_json = json.dumps(article_dict, ensure_ascii=False)
         new_article['article'] = article_dict
 
         new_article['embedding'] = article['embedding']
-        
-        
         new_art_list.append(new_article)
+
     return new_art_list
 
-hierarchy = {
-    'TITULO' : 'headline',
-    'DISPOSICIONES' : 'headline',
-    'CAPITULO' : 'chapter',
-    'ARTICULO' : 'article'
-}
+hierarchy = codes_hierarchy
+headers = headers
 
-def articles_info(book_id, legal_code, hierarchy_dict=hierarchy, debugging=True, remove_lineBreak = False):
+def articles_info(code_id, legal_code, hierarchy_dict=hierarchy, main=None, debugging=True, remove_lineBreak = False):
     article_list = []
-    headline, chapter = "", ""
-    name_next_headline, name_next_chapter = False, False
-    hlId, chId, artId = 0,0,0
+    if main == None:
+        main = 'headline'
+    
+    name_next = False
     index = 0
     for line in legal_code:
         if debugging: print(f"\nIndex: {index} ---------------\n")
@@ -111,78 +104,84 @@ def articles_info(book_id, legal_code, hierarchy_dict=hierarchy, debugging=True,
 
         if hint in hierarchy_dict: # is a header
             # Which head?
-            h = hierarchy_dict[hint]
-            if debugging: print('is an ', h)
+            reference = hierarchy_dict[hint]
+            if debugging: print('is an ', reference)
 
-            # In case the chapter or title (like "Disposiciones") did not have 
-            # a name.
-            if name_next_headline:
-                headline_dict['title'] = headline
-                name_next_headline = False
-
-            if name_next_chapter:
-                if debugging: print('storing chapter', chapter)
-                chapter_dict['title'] = chapter
-                name_next_chapter = False
-
-            if h == 'headline':
-                if debugging: print('Yeap! headline')
+            # The main section that resets the othes but the articles
+            if reference == main:
+                if debugging: print('Yeap! main:', main)
                 headline = line
-                chId, artId = 0,0
-                hlId += 1
-                name_next_headline = True
+                for key in headers:
+                        if key != main and key != 'article':
+                            headers[key]['count'] = 0
+                name_next = True
                 # All articles belong to a headline, but some doesn't
                 # have an chapter. That's why is an trigger.
                 # Some titles can start with articles and not chapters
-                headline_dict = {'title': headline, 'name': None, 'headline_id': hlId}
-                chapter_dict = {'title': None, 'name': None, 'chapter_id':chId}
-                
-
-            elif h == 'chapter':
-                if debugging: print('Yeap! chapter')
-                chapter = line
-                chId += 1
-                # This line is for creating a new dictionary, not as a call
-                chapter_dict = {'title': chapter, 'name': None, 'chapter_id' : chId}
-                if debugging: print(chapter_dict)
-                
-                name_next_chapter = True
+                headers[main]['title'] = line
+                headers[main]['count'] += 1
             
-            else: # article
-                if debugging: print('Yeap! article')
+            # Well, you know... is an article
+            elif reference == 'article': 
+                if debugging: print("It's article")
                 
-                artId += 1
+                headers['article']['count'] += 1
 
-                article_data = build_article_dict(book_id, headline_dict, chapter_dict, line, artId)
-                if debugging: print(article_data)
+                article_data = build_article_dict(code_id, headers, line)
+                if debugging: print_dict_content(article_data,
+                                message = "Article's dictionary content:")
                 article_list.append(article_data)
 
-        else: #is an article
-            if name_next_headline == True:
-                headline_dict['name'] = line
-                name_next_headline = False
-                if debugging: print('headline_dict', headline_dict)
-                
-            elif name_next_chapter == True:
-                chapter_dict['name'] = line
-                name_next_chapter = False
-                if debugging: print('chapter_dict', chapter_dict)
-            
+            # The rest of the sections
             else:
+                if debugging: print('No main, no article, but a section:', reference)
+                headers[reference]['title'] = line
+                headers[reference]['count'] += 1
+                # This line is for creating a new dictionary, not as a call
+                
+                if debugging: print(headers[reference])
+                
+                name_next = True
+
+        else: #is the content of an article 
+            # or the name of a section
+            if name_next == True:
+                headers[flag]['name'] = line
+                name_next = False
+                flag = None
+                if debugging: print('headline_dict', headers[main])
+               
+            
+            else: #content of the article
+                article_dict = article_list[-1]
+
+                # Trial of debugging
                 if debugging: print(line, 'is not on dict')
                 if debugging: print('index: ', index)
-                article_dict = article_list[-1]
+                if debugging: print(article_dict)
+
                 art_cont = article_dict['article']['content']
                 art_cont.append(line)
                 article_dict['article']['content'] = art_cont
-                
+
+        if name_next: flag = reference
         index += 1
 
     # Enrichment area.
-    # for art in range(len(article_list)):
+    # for article in range(len(article_list)):
     #     lex_div = lexical_diversity(article_list[art]['article']['content'])
     #     article_list[art]['article']['lexical_diversity'] = lex_div
 
+
+    
+    # level = {
+    #     'book': 6,
+    #     'part' : 5,
+    #     'headline': 4,
+    #     'chapter': 3,
+    #     'section': 2,
+    #     'article' : 1
+    # }
     return article_list
 
 

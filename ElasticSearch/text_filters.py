@@ -32,13 +32,16 @@ def first_word(sentence):
 
     return word_normalized
 
-def articles_name(line, sep='.'):
+def get_art_name(line, sep='.'):
     char = line[0]
     n = 0
-    while char != sep:
-        n += 1
+    while char != sep and n < len(line):
         char = line[n]
-    return line[:n]
+        n += 1
+
+    article_n = line[:n]
+    # identifier = article_n.split
+    return article_n
 
 ascii_list = ((33,47),(58,64),(91,96),(123,126))
 chars = []
@@ -63,3 +66,39 @@ def clean_words(text, remove_digits=False, debugging=False):
     # for char in chars:
     #     text = text.replace(char, '')
     return words
+
+def text_removals(dot_text):
+    ndot_text = []
+    index = 0
+    for line in dot_text:
+    # Step 1: Remove de line breaks "\n.".
+        if line == '\n.':
+            pass
+        elif len(line) == 0:
+            pass
+        # Step 2:Remove the space at the begging.
+        elif  line[0] == ' ':
+            ndot_text.append(line[1:])
+        # Step 3:Remove the \n for headlines and chapters
+
+        elif line[-1:] == '\n':
+            # Some elements are just line breaks, and adding the condition into
+            # an "AND" on the if doesn't remove it
+            if len(line) > 2:
+                ndot_text.append(line.rstrip("\n"))
+        # Nothing to change
+        else:
+            ndot_text.append(line)
+        index += 1
+    # Step 3: Print the true len of the dot_text.
+    print('Total elements:', len(ndot_text), '\n----------------------')
+
+    index = 0
+
+    for line in ndot_text:
+        # Step 1: Remove de line breaks "\n.".
+        if line == '\n.':
+            ndot_text.pop(index)
+        index +=1
+
+    return ndot_text
