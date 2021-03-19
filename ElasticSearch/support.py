@@ -1,72 +1,51 @@
-
-
-import re
 import json
+from text_filters import *
+from classifier import *
+from objects import *
 
-ascii_list = ((33,47),(58,64),(91,96),(123,126))
-chars = []
-for tupple in ascii_list:
-    for n in range(tupple[0], tupple[1]):
-        chars.append(chr(n))
-
-def clean_words(text, remove_digits=False, debugging=False):
-    '''Remove all puntuaction marks using the ascii table.
-    The digits from 0 to 9 remains unless that it'is required.
-    http://www.asciitable.com/'''
-
-    if debugging: print(text)
-    
-    join_text = " "
-    join_text.join(text)
-    if debugging: print(join_text)
-    
-    words = re.split(r'\W+', join_text)
-    if remove_digits:
-        words = re.split(r'\b\d+\b', join_text)
-    # for char in chars:
-    #     text = text.replace(char, '')
-    return words
+def lexical_diversity(article_content):
+    flat_text = " "
+    flat_text = flat_text.join(article_content)
+    return len(flat_text) / len(set(flat_text))
 
 
-hierarchy = {
-    'TITULO' : 'headline',
-    'DISPOSICIONES' : 'headline',
-    'CAPITULO' : 'chapter',
-    'ARTÍCULO' : 'article'
-}
+def print_dict_content(dictionary, message=None):
+    if message != None: print(message)
+    for key, value in dictionary.items():
+        print("     ",key, "=>", value)
 
-def text_remove_nl(text):
-    for line in text:
-        limit = len(line) - 1
-        n_line = line[:limit]
-        line = n_line
+# Change it on objects
+hierarchy = const_hierarchy
 
-    return text
+def zeros_maker(int_id, str_len = 3):
+    zero_string = '0'*(str_len - len(str(int_id))) + str(int_id)
 
-def first_word(sentence):
-    char = sentence[0]
-    n = 0
-    while char != ' ' and n < len(sentence):
-        n += 1
-        try:
-            char = sentence[n]
-        except:
-        #     print('line', sentence)
-        #     print('length', len(sentence))
-        #     print('last n', n)
-        #     print('last char', char)
-            pass
-    return sentence[:n]
+    return zero_string
 
-    # legal_document = {
-#     # Por ejemplo
-#     'name' : 'Constitucion Politica de Colombia',
-#     # Podemos agregar mas datos, como:
-#     # - fecha de publicacion
-#     # - ultima fecha de actualizacion
-#     # - pais
-#     'content': [article_dict_1, article_dic_2, ..., article_n]
-# }
+def index_hierarchy_id(code_id, headers_dict):
+
+    #     headers = {
+    #     'book': {'title': None, 'name': None, 'count' : 0},
+    #     'part' : {'title': None, 'name': None, 'count' : 0},
+    #     'headline': {'title': None, 'name': None, 'count' : 0},
+    #     'chapter': {'title': None, 'name': None, 'count' : 0},
+    #     'section': {'title': None, 'name': None, 'count' : 0},
+    #     'article' : {'count' : 0},
+    #     }
+    index_list = [code_id]
+    # Yes, i know that this could be made by a for key in headers_dict:
+    # But now, the order is of adding is important
+    index_list.append( zeros_maker(headers_dict['book']['count'], 2) )
+    index_list.append( zeros_maker(headers_dict['part']['count'], 2) )
+    index_list.append( zeros_maker(headers_dict['headline']['count'], 2) )
+    index_list.append( zeros_maker(headers_dict['chapter']['count'], 2) )
+    index_list.append( zeros_maker(headers_dict['section']['count'], 2) )
+    index_list.append( zeros_maker(headers_dict['article']['count'], 4) )
+
+    index = ""
+    for idx in index_list:
+        index += idx
+    return index
 
 def add_to_log(log_info, request_response, post_payload):
     response_dict = json.loads(request_response.text)
@@ -115,9 +94,9 @@ def add_to_log(log_info, request_response, post_payload):
 
 def print_article(art_number, article):
 
+          # "lexical_diversity: ", article['article']['lexical_diversity'],"\n",
     print(f'Article No {art_number+1}: \n',
-          "id: ", article['article']['article_id'],"\n",
-          "lexical_diversity: ", article['article']['lexical_diversity'],"\n",
+          "id: ", article['id'],"\n",
           article['headline']['title'],article['headline']['name'],"\n",
           article['chapter']['title'],article['chapter']['name'],"\n",
           article['article']['name'],article['article']['content'])
