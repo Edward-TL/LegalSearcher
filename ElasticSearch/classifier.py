@@ -17,14 +17,15 @@ def make_article_id(book_id, headline_dict, chapter_dict,artId):
     return article_id
 
 '''build_article_dict(book_id, headers, line, headers['article']['count'])'''
-def build_article_dict(code_id, headers_dict, line):
+def build_article_dict(code_info, headers_dict, line):
     # articles_name is @ text_filters
     article_name = get_art_name(line)
 
-    article_id = index_hierarchy_id(code_id, headers_dict)
+    article_id = index_hierarchy_id(code_info['id'], headers_dict)
     # print(article_id)
     article_dict = {
-        'index': code_id,
+        'index': code_info['id'],
+        'legal_source' : code_info['source_name'],
         'id': str.lower(article_id),
         }
     for key, key_dictionary in headers_dict.items():
@@ -65,6 +66,7 @@ def format_articles(articles_list, headers_dict, debugging=False):
         # First, the things that will remain
         new_article = {
             'index': article['index'],
+            'legal_source' : article['legal_source'],
             'id': article['id'],
         }
 
@@ -84,10 +86,22 @@ def format_articles(articles_list, headers_dict, debugging=False):
     return new_art_list
 
 hierarchy = codes_hierarchy
+def start_headers():
+    headers_zero = {
+    'book': {'title': None, 'name': None, 'count' : 0},
+    'part' : {'title': None, 'name': None, 'count' : 0},
+    'headline': {'title': None, 'name': None, 'count' : 0},
+    'chapter': {'title': None, 'name': None, 'count' : 0},
+    'section': {'title': None, 'name': None, 'count' : 0},
+    'article' : {'count' : 0},
+        }
+    return headers_zero
+
 headers = headers
 
-def articles_info(code_id, legal_code, hierarchy_dict=hierarchy, main=None, debugging=True, remove_lineBreak = False):
+def articles_info(code_info, legal_code, hierarchy_dict=hierarchy, main=None, debugging=True, remove_lineBreak = False):
     article_list = []
+    headers = start_headers()
     if main == None:
         main = 'headline'
     
@@ -127,7 +141,7 @@ def articles_info(code_id, legal_code, hierarchy_dict=hierarchy, main=None, debu
                 
                 headers['article']['count'] += 1
 
-                article_data = build_article_dict(code_id, headers, line)
+                article_data = build_article_dict(code_info, headers, line)
                 if debugging: print_dict_content(article_data,
                                 message = "Article's dictionary content:")
                 article_list.append(article_data)

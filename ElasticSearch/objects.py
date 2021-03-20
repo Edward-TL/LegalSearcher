@@ -27,6 +27,11 @@ const_headers = {
     'article' : {'count' : 0},
 }
 
+const_info = {
+    'id' : 'const',
+    'source_name': 'Constitución Política de Colombia'
+}
+
 codes_hierarchy = {
     # Agregados
     'LIBRO': 'book',
