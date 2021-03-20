@@ -65,7 +65,10 @@ code_info = {
 # the memory direction will be the same, so any change in one
 # will change them all.
 headers = {
-    'book': {'title': None, 'name': None, 'count' : 0},
+    'book': {
+        'title': None, 
+        'name': None, 
+        'count' : 0},
     'part' : {'title': None, 'name': None, 'count' : 0},
     'headline': {'title': None, 'name': None, 'count' : 0},
     'chapter': {'title': None, 'name': None, 'count' : 0},

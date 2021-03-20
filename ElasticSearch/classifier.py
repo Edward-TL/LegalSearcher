@@ -80,7 +80,7 @@ def format_articles(articles_list, headers_dict, debugging=False):
         # article_json = json.dumps(article_dict, ensure_ascii=False)
         new_article['article'] = article_dict
 
-        new_article['embedding'] = article['embedding']
+        new_article['dot_comma_sep'] = article['dot_comma_sep']
         new_art_list.append(new_article)
 
     return new_art_list
@@ -98,6 +98,8 @@ def start_headers():
     return headers_zero
 
 headers = headers
+
+
 
 def articles_info(code_info, legal_code, hierarchy_dict=hierarchy, main=None, debugging=True, remove_lineBreak = False):
     article_list = []
@@ -126,8 +128,8 @@ def articles_info(code_info, legal_code, hierarchy_dict=hierarchy, main=None, de
                 if debugging: print('Yeap! main:', main)
                 headline = line
                 for key in headers:
-                        if key != main and key != 'article':
-                            headers[key]['count'] = 0
+                    if key != main and key != 'article':
+                        headers[key] = {'title': None, 'name': None, 'count' : 0}
                 name_next = True
                 # All articles belong to a headline, but some doesn't
                 # have an chapter. That's why is an trigger.
@@ -163,7 +165,7 @@ def articles_info(code_info, legal_code, hierarchy_dict=hierarchy, main=None, de
                 headers[flag]['name'] = line
                 name_next = False
                 flag = None
-                if debugging: print('headline_dict', headers[main])
+                if debugging: print('main_dict', headers[main])
                
             
             else: #content of the article
