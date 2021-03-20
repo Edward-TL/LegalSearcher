@@ -61,14 +61,16 @@ code_info = {
 }
 
 
+const_info = {
+        'id': "Const",
+        'source_name': "Constitución Política de Colombia",
+    }
+
 # dont replace it with a simple object, because
 # the memory direction will be the same, so any change in one
 # will change them all.
 headers = {
-    'book': {
-        'title': None, 
-        'name': None, 
-        'count' : 0},
+    'book': {'title': None, 'name': None, 'count' : 0},
     'part' : {'title': None, 'name': None, 'count' : 0},
     'headline': {'title': None, 'name': None, 'count' : 0},
     'chapter': {'title': None, 'name': None, 'count' : 0},
@@ -84,3 +86,7 @@ level = {
     'section': 2,
     'article' : 1
 }
+
+'''Check index-json of:
+inad
+'''

@@ -20,7 +20,6 @@ def make_article_id(book_id, headline_dict, chapter_dict,artId):
 def build_article_dict(code_info, headers_dict, line):
     # articles_name is @ text_filters
     article_name = get_art_name(line)
-
     article_id = index_hierarchy_id(code_info['id'], headers_dict)
     # print(article_id)
     article_dict = {
