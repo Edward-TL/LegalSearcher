@@ -1,0 +1,64 @@
+{
+    "mappings":{
+        "properties":{
+            "index": {
+                "type": "text"
+            },
+            "legal_source": {
+                "type": "text"
+            },
+            "id": {
+                "type": "text"
+            },
+            "book": {
+                "properties":{
+                    "title": {"type": "text"},
+                    "name": {"type": "text"}
+                }
+            },
+            "headline": {
+                "properties":{
+                    "title": {"type": "text"},
+                    "name": {"type": "text"}
+                }
+            },
+            "chapter": {
+                "properties":{
+                    "title": {"type": "text"},
+                    "name": {"type": "text"}
+                }
+            },
+            "section": {
+                "properties":{
+                    "title": {"type": "text"},
+                    "name": {"type": "text"}
+                }
+            },
+            "part": {
+                "properties":{
+                    "title": {"type": "text"},
+                    "name": {"type": "text"}
+                }
+            },
+            "article": {
+                    "properties":{
+                        "name": {"type": "text"},
+                        "content": {
+                            "type":"text","fields":{
+                                "keyword":{
+                                    "type":"keyword","ignore_above":256
+                                    }
+                                }
+                        }
+                        
+                    }
+                },
+            "embedds": {
+                "type": "dense_vector",
+                "dims": 512
+            }
+            
+        }
+    }
+
+}
