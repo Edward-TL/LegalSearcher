@@ -4,7 +4,7 @@ import tensorflow_text
 import numpy as np
 from os import path
 
-# def load_model(filepath):
+
 root_folder = "LegalSearcher/SentenceEncoder"
 embedd_model = f'{root_folder}/model/'
 filepath = path.abspath(path.join('','..', '..',embedd_model))
