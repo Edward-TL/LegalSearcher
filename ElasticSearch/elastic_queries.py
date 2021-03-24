@@ -1,3 +1,5 @@
+from tf_model import embed_text
+
 # This is juts to set a value and avoid the linting issue
 user_query = "Colombia"
 
@@ -63,24 +65,30 @@ def adapt_queries(user_query):
         }
     )
 
+    query_vector = embed_text(user_query)
+
+    query_vector
     Embedds = Query( name = "Embeddings")
     Embedds.Structure(
         {
-        "query": {
-            "script_score": {
+            "query": {
+                "script_score": {
                 "query": {
                     "match_all": {}
                 },
                 "script": {
-                    "source": "cosineSimilarity(params.query_vector, 'question_vec') + 1.0",
-                    "params": {"query_vector": "query_vec"}
+                    "source": "cosineSimilarity(params.queryVector, doc['embedds'])",
+                    "params": {
+                    "queryVector": query_vector
+                    }
+                }
                 }
             }
         }
-        }
     )
 
-    tests = [Simple, Fuzzy, MatchPhrase]
+    
+    tests = [Simple, Fuzzy, MatchPhrase,Embedds]
 
     return tests 
 
