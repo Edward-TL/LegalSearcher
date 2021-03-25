@@ -32,11 +32,13 @@ def first_word(sentence):
 
     return word_normalized
 
-def get_art_name(line, sep='.'):
+def get_art_name(line, sep={'.', "," ,";", "-","°", "º"}):
     char = line[0]
     n = 0
-    while char != sep and n < len(line):
+    flag = False
+    while flag == False and n < len(line):
         char = line[n]
+        if char in sep: flag = True
         n += 1
 
     article_n = line[:n]
